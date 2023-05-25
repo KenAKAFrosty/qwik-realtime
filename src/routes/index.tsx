@@ -222,9 +222,10 @@ export const RealtimeChat = component$(
           value={userMessage.value}
           onInput$={(event) => {
             const target = event.target as HTMLTextAreaElement;
-            userMessage.value = target.value;
+            userMessage.value = target.value.trim();
           }}
           onKeyDown$={(event) => {
+            
             if (event.key === "Enter" && !event.shiftKey) {
               submitMessage();
             }
