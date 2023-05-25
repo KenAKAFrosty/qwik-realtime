@@ -40,7 +40,7 @@ const start = async () => {
   await fastify.register(FastifyQwik, { distDir, buildDir });
 
   // Start the fastify server
-  await fastify.listen({ port: PORT });
+  await fastify.listen({ port: PORT, host: '0.0.0.0' });
 };
 
 start();
