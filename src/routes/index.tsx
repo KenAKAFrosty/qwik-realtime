@@ -5,13 +5,22 @@ import {
   useStylesScoped$,
   useVisibleTask$,
 } from "@builder.io/qwik";
-import { type RequestHandler, type DocumentHead, routeLoader$ } from "@builder.io/qwik-city";
+import {
+  type RequestHandler,
+  type DocumentHead,
+  routeLoader$,
+} from "@builder.io/qwik-city";
 
 import Counter from "~/components/starter/counter/counter";
 import Hero from "~/components/starter/hero/hero";
 import Infobox from "~/components/starter/infobox/infobox";
 import Starter from "~/components/starter/next-steps/next-steps";
-import { chatConnection, sendMessage, type ChatMessage, getCurrentMessages } from "./realtime-chat";
+import {
+  chatConnection,
+  sendMessage,
+  type ChatMessage,
+  getCurrentMessages,
+} from "./realtime-chat";
 
 export const onGet: RequestHandler = async (event) => {
   const userId = event.cookie.get("userId")?.value;
@@ -20,10 +29,10 @@ export const onGet: RequestHandler = async (event) => {
   }
 };
 
-export const useChatMessages = routeLoader$(async (event)=> { 
+export const useChatMessages = routeLoader$(async (event) => {
   const messages = await getCurrentMessages.call(event);
   return messages;
-})
+});
 
 export default component$(() => {
   const initialMessages = useChatMessages();
@@ -122,10 +131,9 @@ export default component$(() => {
   );
 });
 
-export const RealtimeChat = component$((props: { 
-  initialMessages?: Array<ChatMessage>
-}) => {
-  useStylesScoped$(` 
+export const RealtimeChat = component$(
+  (props: { initialMessages?: Array<ChatMessage> }) => {
+    useStylesScoped$(` 
     section { 
       display: flex;
       flex-direction: column;
@@ -165,74 +173,87 @@ export const RealtimeChat = component$((props: {
     }
   `);
 
-  const messages = useSignal<Array<ChatMessage>>(props.initialMessages || []);
-  useVisibleTask$(() => {
-    async function connectAndListen() {
-      try {
-        const stream = await chatConnection();
-        for await (const messagesUpdate of stream) {
-          messages.value = messagesUpdate;
-        }
-        setTimeout(connectAndListen, 500);
-      } catch (e) {
-        console.log("Had error while listening to chat stream", e);
-        setTimeout(connectAndListen, 500);
-      }
-    }
-
-    connectAndListen();
-  });
-
-  const userMessage = useSignal("");
-
-  const submitMessage = $(() => {
-    sendMessage(userMessage.value).then((outcome) => {
-      if (outcome === "No user id in cookies") {
-        window.location.reload();
-      } else {
-        userMessage.value = "";
-      }
-    });
-  });
-
-  return (
-    <section>
-      <h1>Chat</h1>
-      <div class="messages">
-        {messages.value.map((message, i) => {
-          return (
-            <div key={message.user + message.message + i}>
-              <span class="user">{message.user}</span>
-              {`: `}
-              <span>{message.message}</span>
-            </div>
-          );
-        })}
-      </div>
-      <textarea
-        autoFocus
-        value={userMessage.value}
-        onInput$={(event) => {
-          const target = event.target as HTMLTextAreaElement;
-          userMessage.value = target.value;
-        }}
-        onKeyDown$={(event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
-            submitMessage();
+    const messages = useSignal<Array<ChatMessage>>(props.initialMessages || []);
+    useVisibleTask$(() => {
+      async function connectAndListen() {
+        try {
+          const stream = await chatConnection();
+          for await (const messagesUpdate of stream) {
+            messages.value = messagesUpdate;
           }
-        }}
-      />
-      <button onClick$={submitMessage}>Submit</button>
-    </section>
-  );
-});
+          setTimeout(connectAndListen, 500);
+        } catch (e) {
+          console.log("Had error while listening to chat stream", e);
+          setTimeout(connectAndListen, 500);
+        }
+      }
 
-export const head: DocumentHead = {
-  title: "Welcome to Qwik",
-  meta: [
-    {
-      name: "description",
-      content: "Qwik site description",
-    },
-  ],
+      connectAndListen();
+    });
+
+    const userMessage = useSignal("");
+
+    const submitMessage = $(() => {
+      sendMessage(userMessage.value).then((outcome) => {
+        if (outcome === "No user id in cookies") {
+          window.location.reload();
+        } else {
+          userMessage.value = "";
+        }
+      });
+    });
+
+    return (
+      <section>
+        <h1>Chat</h1>
+        <div class="messages">
+          {messages.value.map((message, i) => {
+            return (
+              <div key={message.user + message.message + i}>
+                <span class="user">{message.user}</span>
+                {`: `}
+                <span>{message.message}</span>
+              </div>
+            );
+          })}
+        </div>
+        <textarea
+          autoFocus
+          value={userMessage.value}
+          onInput$={(event) => {
+            const target = event.target as HTMLTextAreaElement;
+            userMessage.value = target.value;
+          }}
+          onKeyDown$={(event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+              submitMessage();
+            }
+          }}
+        />
+        <button onClick$={submitMessage}>Submit</button>
+      </section>
+    );
+  }
+);
+
+export const head: DocumentHead = (headProps) => {
+  const messages = headProps.resolveValue(useChatMessages);
+  const previewString = messages.length === 0 ? "" : messages.map(m => m.message).join('\n');
+  return {
+    title: "Qwik Realtime Chat Demo",
+    meta: [
+      { 
+        property: "og:title",
+        content: "Qwik Realtime Chat Demo",
+      },
+      {
+        property: "og:description",
+        content: previewString,
+      },
+      {
+        name: "description",
+        content: previewString,
+      },
+    ],
+  };
 };
