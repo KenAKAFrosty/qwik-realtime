@@ -159,11 +159,21 @@ export const RealtimeChat = component$(() => {
 
   const messages = useSignal<Array<ChatMessage>>([]);
   useVisibleTask$(() => {
-    chatConnection().then(async (stream) => {
-      for await (const messagesUpdate of stream) {
-        messages.value = messagesUpdate;
+
+    function connectAndListen() {
+      try {
+        chatConnection().then(async (stream) => {
+          for await (const messagesUpdate of stream) {
+            messages.value = messagesUpdate;
+          }
+        });
+      } catch (e) {
+        console.log("Had error while listening to chat stream", e);
+        setTimeout(connectAndListen, 500);
       }
-    });
+    }
+
+    connectAndListen();
   });
 
   const userMessage = useSignal("");
@@ -178,7 +188,6 @@ export const RealtimeChat = component$(() => {
     });
   });
 
-
   return (
     <section>
       <h1>Chat</h1>
@@ -188,7 +197,7 @@ export const RealtimeChat = component$(() => {
             <div key={message.user + message.message + i}>
               <span class="user">{message.user}</span>
               {`: `}
-              <span >{message.message}</span>
+              <span>{message.message}</span>
             </div>
           );
         })}
@@ -209,7 +218,6 @@ export const RealtimeChat = component$(() => {
       <button onClick$={submitMessage}>Submit</button>
     </section>
   );
-
 });
 
 export const head: DocumentHead = {
