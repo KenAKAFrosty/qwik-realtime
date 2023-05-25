@@ -124,7 +124,8 @@ export const RealtimeChat = component$(() => {
       align-items: center;
       min-height: 600px;
       margin: auto;
-      width: 40rem;
+      max-width: 40rem;
+      width: 90%;
     }
     h1 { 
       font-size: 60px;
