@@ -193,6 +193,7 @@ export const RealtimeChat = component$(() => {
         })}
       </div>
       <textarea
+        autoFocus
         value={userMessage.value}
         onInput$={(event) => {
           const target = event.target as HTMLTextAreaElement;
