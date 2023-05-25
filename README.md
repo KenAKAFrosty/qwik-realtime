@@ -1,6 +1,6 @@
 # IMPORTANT NOTE
 
-Must run on a NodeJS implementation sitting on a single box. This just keeps chat messages in memory. That won't work if you use edge functions or lambdas. 
+Must run on a NodeJS implementation sitting on a single box. This is because this implementation keeps chat messages in memory. That won't work if you use edge functions or lambdas. 
 
 Btw, if you want a ridiculously easy way to run qwik on a dedciated box for super cheap and with ridiculous DX, check out Railway at https://railway.app (not a paid promotion 😝 just a very satisfied customer).
 
