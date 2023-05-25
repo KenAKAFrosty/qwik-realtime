@@ -75,10 +75,10 @@ npm run build # or `yarn build`
 
 ## Fastify Server
 
-This app has a minimal [Fastify server](https://fastify.io/) implementation. After running a full build, you can preview the build using the command:
+This app has a minimal [Fastify server](https://fastify.io/) implementation. To preview the production build, use the command:
 
 ```
-npm run serve
+npm run preview
 ```
 
-Then visit [http://localhost:3000/](http://localhost:3000/)
+Then visit [http://localhost:3000/](http://localhost:4173/)
