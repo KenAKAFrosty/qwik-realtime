@@ -5,13 +5,13 @@ import {
   useStylesScoped$,
   useVisibleTask$,
 } from "@builder.io/qwik";
-import { type RequestHandler, type DocumentHead } from "@builder.io/qwik-city";
+import { type RequestHandler, type DocumentHead, routeLoader$ } from "@builder.io/qwik-city";
 
 import Counter from "~/components/starter/counter/counter";
 import Hero from "~/components/starter/hero/hero";
 import Infobox from "~/components/starter/infobox/infobox";
 import Starter from "~/components/starter/next-steps/next-steps";
-import { chatConnection, sendMessage, type ChatMessage } from "./realtime-chat";
+import { chatConnection, sendMessage, type ChatMessage, getCurrentMessages } from "./realtime-chat";
 
 export const onGet: RequestHandler = async (event) => {
   const userId = event.cookie.get("userId")?.value;
@@ -20,10 +20,16 @@ export const onGet: RequestHandler = async (event) => {
   }
 };
 
+export const useChatMessages = routeLoader$(async (event)=> { 
+  const messages = await getCurrentMessages.call(event);
+  return messages;
+})
+
 export default component$(() => {
+  const initialMessages = useChatMessages();
   return (
     <>
-      <RealtimeChat />
+      <RealtimeChat initialMessages={initialMessages.value} />
       <Hero />
       <Starter />
 
@@ -116,7 +122,9 @@ export default component$(() => {
   );
 });
 
-export const RealtimeChat = component$(() => {
+export const RealtimeChat = component$((props: { 
+  initialMessages?: Array<ChatMessage>
+}) => {
   useStylesScoped$(` 
     section { 
       display: flex;
@@ -157,7 +165,7 @@ export const RealtimeChat = component$(() => {
     }
   `);
 
-  const messages = useSignal<Array<ChatMessage>>([]);
+  const messages = useSignal<Array<ChatMessage>>(props.initialMessages || []);
   useVisibleTask$(() => {
     async function connectAndListen() {
       try {

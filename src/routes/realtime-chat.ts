@@ -18,6 +18,10 @@ export const sendMessage = server$(async function (message: string) {
   }
 });
 
+export const getCurrentMessages = server$(async function() { 
+  return messageCache;
+})
+
 export const chatConnection = server$(async function* () {
   let thisInstanceLastUpdated = lastUpdated;
   yield messageCache;
