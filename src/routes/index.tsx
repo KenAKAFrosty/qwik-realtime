@@ -1,14 +1,29 @@
-import { component$ } from '@builder.io/qwik';
-import type { DocumentHead } from '@builder.io/qwik-city';
+import {
+  $,
+  component$,
+  useSignal,
+  useStylesScoped$,
+  useVisibleTask$,
+} from "@builder.io/qwik";
+import { type RequestHandler, type DocumentHead } from "@builder.io/qwik-city";
 
-import Counter from '~/components/starter/counter/counter';
-import Hero from '~/components/starter/hero/hero';
-import Infobox from '~/components/starter/infobox/infobox';
-import Starter from '~/components/starter/next-steps/next-steps';
+import Counter from "~/components/starter/counter/counter";
+import Hero from "~/components/starter/hero/hero";
+import Infobox from "~/components/starter/infobox/infobox";
+import Starter from "~/components/starter/next-steps/next-steps";
+import { chatConnection, sendMessage, type ChatMessage } from "./realtime-chat";
+
+export const onGet: RequestHandler = async (event) => {
+  const userId = event.cookie.get("userId")?.value;
+  if (!userId) {
+    event.cookie.set("userId", crypto.randomUUID());
+  }
+};
 
 export default component$(() => {
   return (
     <>
+      <RealtimeChat />
       <Hero />
       <Starter />
 
@@ -58,7 +73,7 @@ export default component$(() => {
               Example Apps
             </div>
             <p>
-              Have a look at the <a href="/demo/flower">Flower App</a> or the{' '}
+              Have a look at the <a href="/demo/flower">Flower App</a> or the{" "}
               <a href="/demo/todolist">Todo App</a>.
             </p>
           </Infobox>
@@ -101,12 +116,109 @@ export default component$(() => {
   );
 });
 
+export const RealtimeChat = component$(() => {
+  useStylesScoped$(` 
+    section { 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 600px;
+      margin: auto;
+      width: 40rem;
+    }
+    h1 { 
+      font-size: 60px;
+      margin-bottom: 10px;
+    }
+    textarea { 
+      padding: 4px;
+      outline: none;
+      border-radius: 8px;
+      min-height: 70px;
+      font-size: inherit;
+      font-family: inherit;
+      width: 100%;
+      background-color: #e4d9ef
+    }
+    button { 
+      padding: 12px;
+      font-weight: bold;
+      font-size: 24px;
+      margin-top: 10px;
+    }
+    .messages { 
+      flex-grow: 1;
+      padding: 20px;
+      width: 100%;
+    }
+    .user { 
+      font-weight: bold;
+    }
+    .message { 
+
+    }
+  `);
+
+  const messages = useSignal<Array<ChatMessage>>([]);
+  useVisibleTask$(() => {
+    chatConnection().then(async (stream) => {
+      for await (const messagesUpdate of stream) {
+        messages.value = messagesUpdate;
+      }
+    });
+  });
+
+  const userMessage = useSignal("");
+
+  const submitMessage = $(() => {
+    sendMessage(userMessage.value).then((outcome) => {
+      if (outcome === "No user id in cookies") {
+        window.location.reload();
+      } else {
+        userMessage.value = "";
+      }
+    });
+  });
+
+
+  return (
+    <section>
+      <h1>Chat</h1>
+      <div class="messages">
+        {messages.value.map((message, i) => {
+          return (
+            <div key={message.user + message.message + i}>
+              <span class="user">{message.user}</span>
+              {`: `}
+              <span class="message">{message.message}</span>
+            </div>
+          );
+        })}
+      </div>
+      <textarea
+        value={userMessage.value}
+        onInput$={(event) => {
+          const target = event.target as HTMLTextAreaElement;
+          userMessage.value = target.value;
+        }}
+        onKeyDown$={(event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            submitMessage();
+          }
+        }}
+      />
+      <button onClick$={submitMessage}>Submit</button>
+    </section>
+  );
+  
+});
+
 export const head: DocumentHead = {
-  title: 'Welcome to Qwik',
+  title: "Welcome to Qwik",
   meta: [
     {
-      name: 'description',
-      content: 'Qwik site description',
+      name: "description",
+      content: "Qwik site description",
     },
   ],
 };

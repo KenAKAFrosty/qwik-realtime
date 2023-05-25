@@ -1,3 +1,8 @@
+# IMPORTANT NOTE
+
+Must run on a NodeJS implementation sitting on a single box. This just keeps chat messages in memory. That won't work if you use edge functions or lambdas. 
+
+
 # Qwik City App ⚡️
 
 - [Qwik Docs](https://qwik.builder.io/)
