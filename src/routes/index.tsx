@@ -238,7 +238,7 @@ export const RealtimeChat = component$(
 
 export const head: DocumentHead = (headProps) => {
   const messages = headProps.resolveValue(useChatMessages);
-  const previewString = messages.length === 0 ? "" : `Recent messages: ${messages.map(m => `"${m.message.trim()}"`).join(', ')}`;
+  const previewString = messages.length === 0 ? "" : `Recent messages: ${messages.slice(-3).map(m => `"${m.message.trim()}"`).join(', ')}`;
   return {
     title: "Qwik Realtime Chat Demo",
     meta: [
