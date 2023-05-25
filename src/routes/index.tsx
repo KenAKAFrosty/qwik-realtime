@@ -154,9 +154,6 @@ export const RealtimeChat = component$(() => {
     .user { 
       font-weight: bold;
     }
-    .message { 
-
-    }
   `);
 
   const messages = useSignal<Array<ChatMessage>>([]);
@@ -190,7 +187,7 @@ export const RealtimeChat = component$(() => {
             <div key={message.user + message.message + i}>
               <span class="user">{message.user}</span>
               {`: `}
-              <span class="message">{message.message}</span>
+              <span >{message.message}</span>
             </div>
           );
         })}
@@ -210,7 +207,7 @@ export const RealtimeChat = component$(() => {
       <button onClick$={submitMessage}>Submit</button>
     </section>
   );
-  
+
 });
 
 export const head: DocumentHead = {
