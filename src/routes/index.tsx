@@ -222,10 +222,9 @@ export const RealtimeChat = component$(
           value={userMessage.value}
           onInput$={(event) => {
             const target = event.target as HTMLTextAreaElement;
-            userMessage.value = target.value.trim();
+            userMessage.value = target.value;
           }}
           onKeyDown$={(event) => {
-            
             if (event.key === "Enter" && !event.shiftKey) {
               submitMessage();
             }
@@ -239,7 +238,7 @@ export const RealtimeChat = component$(
 
 export const head: DocumentHead = (headProps) => {
   const messages = headProps.resolveValue(useChatMessages);
-  const previewString = messages.length === 0 ? "" : `Recent messages: ${messages.map(m => `"${m.message}"`).join(', ')}`;
+  const previewString = messages.length === 0 ? "" : `Recent messages: ${messages.map(m => `"${m.message.trim()}"`).join(', ')}`;
   return {
     title: "Qwik Realtime Chat Demo",
     meta: [
