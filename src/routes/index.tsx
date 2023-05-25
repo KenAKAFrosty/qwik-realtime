@@ -159,14 +159,13 @@ export const RealtimeChat = component$(() => {
 
   const messages = useSignal<Array<ChatMessage>>([]);
   useVisibleTask$(() => {
-
-    function connectAndListen() {
+    async function connectAndListen() {
       try {
-        chatConnection().then(async (stream) => {
-          for await (const messagesUpdate of stream) {
-            messages.value = messagesUpdate;
-          }
-        });
+        const stream = await chatConnection();
+        for await (const messagesUpdate of stream) {
+          messages.value = messagesUpdate;
+        }
+        setTimeout(connectAndListen, 500);
       } catch (e) {
         console.log("Had error while listening to chat stream", e);
         setTimeout(connectAndListen, 500);
